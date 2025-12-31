@@ -8,6 +8,11 @@ export interface FileItem {
   type: string;
   source: AppSource;
   contentSnippet: string;
+  // New fields for real file handling
+  base64Data?: string;
+  mimeType?: string;
+  // Backend identifier for search
+  serverFilename?: string;
 }
 
 export interface AppConnection {
@@ -18,9 +23,14 @@ export interface AppConnection {
 }
 
 export interface AnalysisResult {
-  status: 'conflict' | 'success' | 'warning' | 'neutral';
-  title: string;
-  summary: string;
-  risks: string[];
-  recommendations: string[];
+  markdown: string;
+}
+
+export interface SearchResult {
+  general_definition: string;
+  document_matches: {
+    quote: string;
+    context: string;
+  }[];
+  summary_verdict: string;
 }

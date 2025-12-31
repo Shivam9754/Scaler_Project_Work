@@ -52,7 +52,6 @@ app.post('/api/analyze', async (req, res) => {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     const { fileName, contentSnippet, type, base64Data, mimeType, prompt } = req.body;
-
     if (!prompt) {
       return res.status(400).json({ error: "Prompt is required" });
     }
@@ -63,17 +62,12 @@ app.post('/api/analyze', async (req, res) => {
       type?.includes("mp4") ||
       type?.includes("mp3");
 
-    const modelName = isMedia
-      ? "gemini-2.0-flash-exp"
-      : "gemini-2.0-flash-exp";
+    const modelName = isMedia ? "gemini-2.0-flash-exp" : "gemini-2.0-flash-exp";
 
     const parts = [];
     if (base64Data && mimeType) {
       parts.push({
-        inlineData: {
-          mimeType,
-          data: base64Data,
-        },
+        inlineData: { mimeType, data: base64Data },
       });
     }
     if (contentSnippet) {
@@ -81,28 +75,22 @@ app.post('/api/analyze', async (req, res) => {
     }
     parts.push({ text: prompt });
 
-    const config = {};
-    if (!isMedia) {
-      config.thinkingConfig = { thinkingBudget: 2048 };
-    }
-
-    // ✅ Call Gemini
+    // ✅ Correct Gemini call
     const model = ai.getGenerativeModel({ model: modelName });
     const result = await model.generateContent(parts);
 
+    // ✅ Correct response parsing
     const output =
       result?.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Analysis failed to generate output.";
+      "No output generated";
 
     res.json({ markdown: output });
   } catch (error) {
     console.error("Analysis Error:", error);
-    res.status(500).json({
-      error: "Analysis failed",
-      message: error.message,
-    });
+    res.status(500).json({ error: "Analysis failed", message: error.message });
   }
 });
+
 
 // ✅ Health check
 app.get('/api/health', (req, res) => {
